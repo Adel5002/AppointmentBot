@@ -17,13 +17,14 @@
                         {{ slot[0].strftime("%H:%M") }}
                     </button>
             {% else %}
-                <form action="{{ url_for('get_date', specialist_id=12345678) }}" method="post">
+                <form action="{{ url_for('get_date', specialist_id=12345678) }}?choose_date={{current_date}}" method="post">
                 <input type="hidden" name="user_id" value="1">
-                <input type="hidden" name="appointment_date" class="hidden-date-input" value="">
-                <button 
+                <button
+                    name="appointment_date"
                     type="submit" 
-                    class="time-slot-btn" 
-                    data-time="{{ slot.strftime('%H:%M') }}">
+                    class="time-slot-btn"
+                    value="{{current_date}}T{{ slot.strftime('%H:%M') }}"
+                    >
                     {{ slot.strftime('%H:%M') }}
                 </button>
                 </form>

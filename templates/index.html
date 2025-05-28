@@ -24,7 +24,7 @@
             <input type="hidden" name="user_id" value="1">
             <input type="hidden" name="specialist_id" value="12345678">
             <button class="consult-button">
-                <a href="{{ url_for('choose_datetime', specialist_id=12345678) }}">Получить консультацию</a>
+                <a href="{{ url_for('choose_datetime', specialist_id=12345678) }}?choose_date={{ today }}">Получить консультацию</a>
             </button>
         </main>
     {% endblock %}

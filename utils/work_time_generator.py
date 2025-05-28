@@ -1,4 +1,4 @@
-from datetime import datetime, time, timedelta
+from datetime import datetime, time, timedelta, date
 
 from loguru import logger
 
@@ -8,15 +8,15 @@ def generate_time_slots(
         end: time,
         lunch_start: time,
         lunch_end: time,
+        choose_date: date,
         slot_minutes: int = 30,
         excluded_slots: list[datetime] | None = None,
 ) -> list[datetime]:
 
-    today = datetime.now().date()
-    start_dt = datetime.combine(today, start)
-    end_dt = datetime.combine(today, end)
-    lunch_start_dt = datetime.combine(today, lunch_start)
-    lunch_end_dt = datetime.combine(today, lunch_end)
+    start_dt = datetime.combine(choose_date, start)
+    end_dt = datetime.combine(choose_date, end)
+    lunch_start_dt = datetime.combine(choose_date, lunch_start)
+    lunch_end_dt = datetime.combine(choose_date, lunch_end)
 
     slots = []
     current = start_dt

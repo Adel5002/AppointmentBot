@@ -3,7 +3,7 @@ import os
 import uvicorn
 
 from contextlib import asynccontextmanager
-from datetime import datetime
+from datetime import datetime, date
 from typing import List, Sequence, Annotated
 
 from fastapi import FastAPI, HTTPException, Request, Form
@@ -47,10 +47,13 @@ templates.env.filters['type_name'] = type_name
 
 @app.get('/', response_class=HTMLResponse)
 async def main_page(request: Request):
-    return templates.TemplateResponse(request=request, name='index.html', context={'data': 'You Baka!'})
+    return templates.TemplateResponse(request=request, name='index.html', context={
+        'data': 'You Baka!',
+        'today': date.today()
+    })
 
-@app.get('/choose-datetime/{specialist_id}')
-async def choose_datetime(request: Request, session: SessionDep, specialist_id: int):
+@app.get('/choose-datetime/{specialist_id}/')
+async def choose_datetime(request: Request, session: SessionDep, specialist_id: int, choose_date: date):
     specialist = session.get(Specialist, specialist_id)
     work_time_start = specialist.work_start
     work_time_end = specialist.work_end
@@ -63,13 +66,23 @@ async def choose_datetime(request: Request, session: SessionDep, specialist_id: 
     ).all()
 
     # Сделать хранилище appointment'ов
-    time_slots = generate_time_slots(work_time_start, work_time_end, lunch_time_start, lunch_time_end, excluded_slots=appointments)
+    time_slots = generate_time_slots(
+        work_time_start,
+        work_time_end,
+        lunch_time_start,
+        lunch_time_end,
+        excluded_slots=appointments,
+        choose_date=choose_date
+    )
     logger.info(time_slots)
 
     return templates.TemplateResponse(
         request=request,
         name='choose_datetime/choose_datetime.html',
-        context={'time_slots': time_slots}
+        context={
+            'time_slots': time_slots,
+            'current_date': choose_date
+        }
     )
 
 @app.post('/get-date/{specialist_id}')
@@ -79,6 +92,7 @@ async def get_date(
         appointment_date: Annotated[datetime, Form()],
         specialist_id: int,
         user_id: Annotated[int, Form()],
+        choose_date: date
 ):
     appointment = AppointmentTime(
         user_id=user_id,
@@ -89,7 +103,10 @@ async def get_date(
     session.add(appointment)
     session.commit()
     session.refresh(appointment)
-    return RedirectResponse(url=request.url_for('choose_datetime', specialist_id=specialist_id), status_code=303)
+    return RedirectResponse(
+        url=f'{request.url_for("choose_datetime", specialist_id=specialist_id)}?choose_date={choose_date}',
+        status_code=303
+    )
 
 # --- Specialist ---
 
