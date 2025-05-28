@@ -1,0 +1,34 @@
+{% extends "index.html" %}
+
+{% block title %}Choose time{% endblock %}
+
+{% block body %}
+<main class="datetime-container">
+    <h2 class="datetime-title">Choose time</h2>
+    <div id="calendarWrapper" class="flatpickr" data-wrap="true" style="display:inline-block; cursor:pointer; font-family: monospace;">
+        <input id="datepicker" type="text" data-input style="border: none; background: transparent; cursor: pointer; font-family: monospace;" />
+    </div>
+ 
+    <div class="time-slots-grid">
+        
+        {% for slot in time_slots %}
+            {% if slot|type_name == "tuple" %}
+                    <button disabled value="{{ slot }}" name="appointment_date" class="time-slot-btn used">
+                        {{ slot[0].strftime("%H:%M") }}
+                    </button>
+            {% else %}
+                <form action="{{ url_for('get_date', specialist_id=12345678) }}" method="post">
+                <input type="hidden" name="user_id" value="1">
+                <input type="hidden" name="appointment_date" class="hidden-date-input" value="">
+                <button 
+                    type="submit" 
+                    class="time-slot-btn" 
+                    data-time="{{ slot.strftime('%H:%M') }}">
+                    {{ slot.strftime('%H:%M') }}
+                </button>
+                </form>
+            {% endif %}
+        {% endfor %}
+    </div>
+</main>
+{% endblock %}
