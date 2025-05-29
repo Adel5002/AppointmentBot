@@ -42,24 +42,34 @@ class UserCreate(SQLModel):
     id: int = Field(primary_key=True)
     name: str = Field(max_length=64)
     lastname: str = Field(max_length=64)
-    email: str
 
 
 class UserUpdate(SQLModel):
     name: str | None = Field(default=None, max_length=64)
     lastname: str | None = Field(default=None, max_length=64)
-    email: str | None = Field(default=None)
+
+
+class UserRead(SQLModel):
+    id: int
+    name: str
+    lastname: str
+    appointment: Optional['AppointmentTimeRead'] = None
 
 
 class User(UserCreate, table=True):
     appointment: 'AppointmentTime' = Relationship(back_populates='user')
 
 
+class AppointmentTimeRead(SQLModel):
+    id: int
+    datetime: datetime
+    specialist_id: int
+
 class AppointmentTime(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     datetime: datetime
 
-    user_id: int = Field(foreign_key='user.id')
+    user_id: int = Field(foreign_key='user.id', unique=True)
     user: User = Relationship(back_populates='appointment')
 
     specialist_id: int = Field(foreign_key='specialist.id')

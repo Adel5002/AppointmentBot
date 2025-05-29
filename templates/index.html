@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="{{ url_for('statics', path='/styles.css') }}" rel="stylesheet">
+    <link href="{{ url_for('statics', path='/styles.css?=v1') }}" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
     <title>{% block title %}Main Page{% endblock %}</title>
 </head>
@@ -11,7 +11,7 @@
     {% block header %}
         <header class="tg-header">
             <h2 class="tg-header-title">
-                👋 Hello, {{ data or 'quest' }}!
+                👋 Hello, {{ request.cookies.get('firstname') or 'quest' }}!
             </h2>
             <p class="tg-header-subtitle">
                 Welcome to our Telegram MiniApp
@@ -21,8 +21,6 @@
         
     {% block body %}
         <main class="main-section">
-            <input type="hidden" name="user_id" value="1">
-            <input type="hidden" name="specialist_id" value="12345678">
             <button class="consult-button">
                 <a href="{{ url_for('choose_datetime', specialist_id=12345678) }}?choose_date={{ today }}">Получить консультацию</a>
             </button>
@@ -30,7 +28,8 @@
     {% endblock %}
     <script src="https://telegram.org/js/telegram-web-app.js?57"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="{{ url_for('statics', path='/scripts.js') }}"></script>
+    <script src="{{ url_for('statics', path='/scripts.js?=v1') }}"></script>
+    <script src="{{ url_for('statics', path='/user_create.js?=v1') }}"></script>
     
 </body>
 </html>

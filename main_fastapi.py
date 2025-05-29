@@ -6,10 +6,11 @@ from contextlib import asynccontextmanager
 from datetime import datetime, date
 from typing import List, Sequence, Annotated
 
-from fastapi import FastAPI, HTTPException, Request, Form
-from fastapi.responses import RedirectResponse
+from fastapi import FastAPI, HTTPException, Request, Form, Response
+from fastapi.responses import RedirectResponse, JSONResponse
 from loguru import logger
 from sqlmodel import select
+from sqlalchemy.orm import selectinload
 from starlette.responses import HTMLResponse
 from starlette.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
@@ -23,7 +24,7 @@ load_dotenv()
 
 from SQLmodel.database import create_db_and_tables, SessionDep
 from SQLmodel.models import Specialist, SpecialistCreate, SpecialistUpdate, SpecialistDayOff, AppointmentTime, User, \
-    UserCreate, UserUpdate
+    UserCreate, UserUpdate, UserRead
 
 
 @asynccontextmanager
@@ -45,12 +46,18 @@ app.mount("/statics", StaticFiles(directory="statics"), name="statics")
 templates = Jinja2Templates(directory="templates")
 templates.env.filters['type_name'] = type_name
 
+@app.post('/set-cookies/')
+async def set_cookies(request: Request):
+    data = await request.json()
+    response = JSONResponse(content={'message': 'Cookies set'})
+    response.set_cookie(key='user_tg_id', value=data['data']['id'])
+    response.set_cookie(key='firstname', value=data['data']['first_name'])
+    return response
+
 @app.get('/', response_class=HTMLResponse)
 async def main_page(request: Request):
-    return templates.TemplateResponse(request=request, name='index.html', context={
-        'data': 'You Baka!',
-        'today': date.today()
-    })
+    logger.info(request.cookies)
+    return templates.TemplateResponse(request=request, name='index.html', context={'today': date.today()})
 
 @app.get('/choose-datetime/{specialist_id}/')
 async def choose_datetime(request: Request, session: SessionDep, specialist_id: int, choose_date: date):
@@ -94,6 +101,11 @@ async def get_date(
         user_id: Annotated[int, Form()],
         choose_date: date
 ):
+    appointment_find = session.get(AppointmentTime, user_id)
+
+    if appointment_find:
+        raise HTTPException(status_code=409, detail="User already has an appointment")
+
     appointment = AppointmentTime(
         user_id=user_id,
         specialist_id=specialist_id,
@@ -163,6 +175,9 @@ async def get_specialists(session: SessionDep) -> Sequence[Specialist]:
 
 @app.post('/user-create/', response_model=User)
 async def user_create(user_data: UserCreate, session: SessionDep) -> User:
+    user_exists = session.get(User, user_data.id)
+    if user_exists:
+        raise HTTPException(409, 'User already exists!')
     user = User(**user_data.dict())
     session.add(user)
     session.commit()
@@ -192,9 +207,15 @@ async def user_delete(user_id: int, session: SessionDep):
     return {'success': 'User deleted successfully'}
 
 
-@app.get('/user/{user_id}', response_model=User)
+@app.get('/user/{user_id}', response_model=UserRead)
 async def get_user(user_id: int, session: SessionDep) -> User:
-    user = session.get(User, user_id)
+    user = session.scalar(
+        select(User)
+        .where(User.id == user_id)
+        .options(
+            selectinload(User.appointment)
+        )
+    )
     if not user:
         raise HTTPException(404, 'User not found')
     return user

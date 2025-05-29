@@ -157,9 +157,9 @@ body.app-body {
 }
 
 #calendarWrapper {
-  display: inline-flex;        /* flex вместо inline-block */
-  justify-content: center;     /* горизонтальное центрирование */
-  align-items: center;         /* вертикальное центрирование */
+  display: inline-flex;   
+  justify-content: center;
+  align-items: center;    
   cursor: pointer;
   font-family: monospace;
   color: white;
@@ -169,7 +169,7 @@ body.app-body {
   background: transparent;
   user-select: none;
   transition: border-color 0.3s ease;
-  min-width: 100px;            /* можно подстроить под нужный размер */
+  min-width: 100px;       
 }
 
 #calendarWrapper input[data-input] {
@@ -181,12 +181,41 @@ body.app-body {
   outline: none;
   cursor: pointer;
   padding: 0;
-  width: 100%;                /* заполняет контейнер */
-  text-align: center;         /* текст по центру */
+  width: 100%;            
+  text-align: center;        
 }
 
 #calendarWrapper:hover {
   border-bottom-color: rgba(255, 255, 255, 0.7);
+}
+
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5); 
+  display: none; 
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; 
+}
+
+.modal {
+  background: var(--bg-color);
+  padding: 20px;
+  border-radius: 8px;
+  z-index: 1001;
+}
+
+.modal p {
+    color: var(--text-color);
+}
+
+.modal button {
+    margin: 10px;
 }
 
 

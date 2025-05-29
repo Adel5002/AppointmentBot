@@ -3,31 +3,35 @@
 {% block title %}Choose time{% endblock %}
 
 {% block body %}
+
 <main class="datetime-container">
+    <div class="modal-overlay" id="customModal">
+    <div class="modal">
+        <p>Вы уверены что хотите поменять время приема?</p>
+        <button id="okButton">ОК</button>
+        <button id="cancelButton">Отмена</button>
+    </div>
+    </div>
     <h2 class="datetime-title">Choose time</h2>
     <div id="calendarWrapper" class="flatpickr" data-wrap="true" style="display:inline-block; cursor:pointer; font-family: monospace;">
         <input id="datepicker" type="text" data-input style="border: none; background: transparent; cursor: pointer; font-family: monospace;" />
     </div>
  
     <div class="time-slots-grid">
-        
+        <input type="hidden" id="specialist-id" value="12345678">
         {% for slot in time_slots %}
             {% if slot|type_name == "tuple" %}
-                    <button disabled value="{{ slot }}" name="appointment_date" class="time-slot-btn used">
-                        {{ slot[0].strftime("%H:%M") }}
-                    </button>
+                <button disabled value="{{ slot }}" class="time-slot-btn used">
+                    {{ slot[0].strftime("%H:%M") }}
+                </button>
             {% else %}
-                <form action="{{ url_for('get_date', specialist_id=12345678) }}?choose_date={{current_date}}" method="post">
-                <input type="hidden" name="user_id" value="1">
                 <button
-                    name="appointment_date"
-                    type="submit" 
                     class="time-slot-btn"
-                    value="{{current_date}}T{{ slot.strftime('%H:%M') }}"
-                    >
+                    data-time="{{ slot.strftime('%H:%M') }}"
+                    data-user-id="{{ request.cookies.get('user_tg_id') }}"
+                >
                     {{ slot.strftime('%H:%M') }}
                 </button>
-                </form>
             {% endif %}
         {% endfor %}
     </div>

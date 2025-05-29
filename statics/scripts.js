@@ -1,6 +1,14 @@
 document.addEventListener('DOMContentLoaded', function () {
+  function showCustomAlert() {
+    document.getElementById('customModal').style.display = 'flex';
+  }
+
+  function closeModal() {
+    document.getElementById('customModal').style.display = 'none';
+  }
+
   const input = document.getElementById('datepicker');
-  const specialist_id = '12345678';
+  const specialist_id = document.getElementById('specialist-id').value
 
   function formatDateLocal(date) {
     const year = date.getFullYear();
@@ -23,13 +31,13 @@ document.addEventListener('DOMContentLoaded', function () {
     return new Date(year, month, day);
   }
 
+  const chosenDateStr = getQueryParam('choose_date');
+  const chosenDate = chosenDateStr ? parseISODate(chosenDateStr) : null;
+
   if (!input) {
     console.error('Input не найден');
     return;
   }
-
-  const chosenDateStr = getQueryParam('choose_date');
-  const chosenDate = chosenDateStr ? parseISODate(chosenDateStr) : null;
 
   flatpickr(input, {
     defaultDate: chosenDate || 'today',
@@ -41,5 +49,84 @@ document.addEventListener('DOMContentLoaded', function () {
         window.location.href = `/choose-datetime/${specialist_id}/?choose_date=${isoDate}`;
       }
     }
+  });
+
+  document.querySelectorAll('.time-slot-btn:not(.used)').forEach(button => {
+    button.addEventListener('click', async () => {
+      const time = button.getAttribute('data-time');
+      const userId = button.getAttribute('data-user-id');
+      const date = getQueryParam('choose_date');
+
+      const payload = new URLSearchParams();
+      payload.append('user_id', userId);
+      payload.append('appointment_date', `${date}T${time}`);
+
+      try {
+        const userResponse = await fetch(`/user/${userId}`);
+        const user = await userResponse.json();
+
+        if (user.appointment) {
+          showCustomAlert();
+
+          const okButton = document.getElementById('okButton');
+          const cancelButton = document.getElementById('cancelButton');
+
+          if (okButton) {
+            // Сначала уберем предыдущие обработчики (иначе навешиваются каждый раз)
+            okButton.replaceWith(okButton.cloneNode(true));
+            const newOkButton = document.getElementById('okButton');
+
+            newOkButton.addEventListener('click', async function () {
+              try {
+                const deleteResponse = await fetch(`/appointment-delete/${user.appointment.id}`, {
+                  method: 'DELETE'
+                });
+
+                if (deleteResponse.ok) {
+                  const response = await fetch(`/get-date/${specialist_id}/?choose_date=${date}`, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: payload.toString(),
+                  });
+
+                  if (response.ok) {
+                    button.classList.toggle = 'time-slot-btn used'
+                    window.location.reload();
+                  }
+                }
+              } catch (err) {
+                console.error('Ошибка удаления:', err);
+              }
+            });
+          }
+
+          if (cancelButton) {
+            cancelButton.replaceWith(cancelButton.cloneNode(true));
+            const newCancelButton = document.getElementById('cancelButton');
+            newCancelButton.addEventListener('click', function () {
+              closeModal();
+            });
+          }
+
+        } else {
+          const response = await fetch(`/get-date/${specialist_id}/?choose_date=${date}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: payload.toString(),
+          });
+
+          if (response.ok) {
+            button.classList.toggle = 'time-slot-btn used'
+            window.location.reload();
+          }
+        }
+      } catch (error) {
+        console.log('Ошибка получения пользователя или брони:', error);
+      }
+    });
   });
 });
