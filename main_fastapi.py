@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 from datetime import datetime, date
 from typing import List, Sequence, Annotated
 
-from fastapi import FastAPI, HTTPException, Request, Form, Response
+from fastapi import FastAPI, HTTPException, Request, Form, WebSocket, WebSocketDisconnect
 from fastapi.responses import RedirectResponse, JSONResponse
 from loguru import logger
 from sqlmodel import select
@@ -45,6 +45,32 @@ app.mount("/statics", StaticFiles(directory="statics"), name="statics")
 
 templates = Jinja2Templates(directory="templates")
 templates.env.filters['type_name'] = type_name
+
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: List[WebSocket] = []
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections.append(websocket)
+
+    def disconnect(self, websocket: WebSocket):
+        self.active_connections.remove(websocket)
+
+    async def broadcast(self, message: str):
+        for connection in self.active_connections:
+            await connection.send_text(message)
+
+manager = ConnectionManager()
+
+@app.websocket('/ws/reload')
+async def websocket_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+    try:
+        while True:
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
 
 @app.post('/set-cookies/')
 async def set_cookies(request: Request):
@@ -101,10 +127,20 @@ async def get_date(
         user_id: Annotated[int, Form()],
         choose_date: date
 ):
-    appointment_find = session.get(AppointmentTime, user_id)
 
-    if appointment_find:
+    user_has_appointment = session.get(AppointmentTime, user_id)
+
+    if user_has_appointment:
         raise HTTPException(status_code=409, detail="User already has an appointment")
+
+    appointment_exists = session.scalar(
+        select(AppointmentTime)
+        .where(AppointmentTime.specialist_id == specialist_id)
+        .where(AppointmentTime.datetime == appointment_date)
+    )
+
+    if appointment_exists:
+        raise HTTPException(status_code=409, detail="This appointment already taken!")
 
     appointment = AppointmentTime(
         user_id=user_id,
@@ -115,6 +151,7 @@ async def get_date(
     session.add(appointment)
     session.commit()
     session.refresh(appointment)
+    await manager.broadcast("reload")
     return RedirectResponse(
         url=f'{request.url_for("choose_datetime", specialist_id=specialist_id)}?choose_date={choose_date}',
         status_code=303

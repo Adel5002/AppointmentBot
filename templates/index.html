@@ -28,6 +28,15 @@
     {% endblock %}
     <script src="https://telegram.org/js/telegram-web-app.js?57"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        const socket = new WebSocket("ws://localhost:8000/ws/reload");
+
+        socket.onmessage = function(event) {
+            if (event.data === "reload") {
+                location.reload();
+            }
+        };
+    </script>
     <script src="{{ url_for('statics', path='/scripts.js?=v1') }}"></script>
     <script src="{{ url_for('statics', path='/user_create.js?=v1') }}"></script>
     

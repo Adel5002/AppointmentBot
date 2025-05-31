@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', function () {
           const cancelButton = document.getElementById('cancelButton');
 
           if (okButton) {
-            // Сначала уберем предыдущие обработчики (иначе навешиваются каждый раз)
+            
             okButton.replaceWith(okButton.cloneNode(true));
             const newOkButton = document.getElementById('okButton');
 
@@ -92,7 +92,6 @@ document.addEventListener('DOMContentLoaded', function () {
                   });
 
                   if (response.ok) {
-                    button.classList.toggle = 'time-slot-btn used'
                     window.location.reload();
                   }
                 }
@@ -120,7 +119,6 @@ document.addEventListener('DOMContentLoaded', function () {
           });
 
           if (response.ok) {
-            button.classList.toggle = 'time-slot-btn used'
             window.location.reload();
           }
         }
