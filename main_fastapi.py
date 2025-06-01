@@ -93,12 +93,25 @@ async def choose_datetime(request: Request, session: SessionDep, specialist_id: 
     lunch_time_start = specialist.lunch_start
     lunch_time_end = specialist.lunch_end
 
+    today = date.today()
+
+    specialist_daysoff = session.scalars(
+        select(SpecialistDayOff)
+        .where(SpecialistDayOff.specialist_id == specialist_id)
+    )
+
+    if choose_date < today:
+        raise HTTPException(status_code=409, detail='Вы не можете выбрать прошедшую дату!')
+
+    for dayoff in specialist_daysoff:
+        if choose_date.weekday() == dayoff.weekday:
+            raise HTTPException(status_code=409, detail='Это выходной!')
+
     appointments = session.scalars(
         select(AppointmentTime.datetime)
         .where(AppointmentTime.specialist_id == specialist_id)
     ).all()
 
-    # Сделать хранилище appointment'ов
     time_slots = generate_time_slots(
         work_time_start,
         work_time_end,

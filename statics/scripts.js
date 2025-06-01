@@ -43,12 +43,27 @@ document.addEventListener('DOMContentLoaded', function () {
     defaultDate: chosenDate || 'today',
     dateFormat: 'd/m/Y',
     onChange: function(selectedDates) {
-      if (selectedDates.length > 0) {
-        const isoDate = formatDateLocal(selectedDates[0]);
-        console.log('Выбрана дата:', isoDate);
+      const isoDate = formatDateLocal(selectedDates[0]);
+      fetch(`/choose-datetime/${specialist_id}?choose_date=${isoDate}`, {
+        method: 'GET'
+      })
+      .then(async response => {
+        if (response.status === 409) {
+          const response_text = await response.json()
+          throw new Error(response_text['detail']);
+        } else if (!response.ok) {
+          throw new Error(`Ошибка сервера: ${response.status}`);
+        }
+      })
+      .then(() => {
         window.location.href = `/choose-datetime/${specialist_id}/?choose_date=${isoDate}`;
-      }
+      })
+      .catch(error => {
+        alert(error.message)
+        location.reload()
+      });
     }
+
   });
 
   document.querySelectorAll('.time-slot-btn:not(.used)').forEach(button => {
@@ -127,4 +142,5 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
   });
+  
 });
