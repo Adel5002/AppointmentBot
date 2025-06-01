@@ -156,6 +156,16 @@ body.app-body {
   box-shadow: 0 0 1px white;
 }
 
+.time-slot-btn.not-allowed {
+   background-color: #ccc;       
+  color: #666;                  
+  cursor: not-allowed;          
+  pointer-events: none;         
+  box-shadow: none;             
+  transform: none;              
+  transition: none !important;
+}
+
 #calendarWrapper {
   display: inline-flex;   
   justify-content: center;
@@ -217,5 +227,4 @@ body.app-body {
 .modal button {
     margin: 10px;
 }
-
 

@@ -39,32 +39,43 @@ document.addEventListener('DOMContentLoaded', function () {
     return;
   }
 
-  flatpickr(input, {
-    defaultDate: chosenDate || 'today',
-    dateFormat: 'd/m/Y',
-    onChange: function(selectedDates) {
-      const isoDate = formatDateLocal(selectedDates[0]);
-      fetch(`/choose-datetime/${specialist_id}?choose_date=${isoDate}`, {
-        method: 'GET'
-      })
-      .then(async response => {
-        if (response.status === 409) {
-          const response_text = await response.json()
-          throw new Error(response_text['detail']);
-        } else if (!response.ok) {
-          throw new Error(`Ошибка сервера: ${response.status}`);
-        }
-      })
-      .then(() => {
-        window.location.href = `/choose-datetime/${specialist_id}/?choose_date=${isoDate}`;
-      })
-      .catch(error => {
-        alert(error.message)
-        location.reload()
-      });
-    }
+flatpickr(input, {
+  defaultDate: chosenDate || 'today',
+  dateFormat: 'd/m/Y',
+  onChange: function (selectedDates) {
+    const isoDate = formatDateLocal(selectedDates[0]);
 
+    fetch(`/choose-datetime/${specialist_id}?choose_date=${isoDate}`, {
+      method: 'GET'
+    })
+    .then(async response => {
+      if (response.status === 409) {
+        const response_text = await response.json();
+        disableTimeSlots();
+        throw new Error(response_text['detail']);
+      } else if (!response.ok) {
+        throw new Error(`Ошибка сервера: ${response.status}`);
+      }
+    })
+    .then(() => {
+      window.location.href = `/choose-datetime/${specialist_id}/?choose_date=${isoDate}`;
+    })
+    .catch(error => {
+      console.warn("Ошибка:", error.message);
+      // Можно тут показать подсказку, но без alert'а
+    });
+  }
+});
+
+function disableTimeSlots() {
+  const dateTimeTitle = document.getElementById('datetime-title')
+  const buttons = document.querySelectorAll('.time-slot-btn');
+  dateTimeTitle.textContent = 'Выходной или прошедшая дата!'
+  buttons.forEach(btn => {
+    btn.disabled = true;
+    btn.classList.add('not-allowed'); 
   });
+}
 
   document.querySelectorAll('.time-slot-btn:not(.used)').forEach(button => {
     button.addEventListener('click', async () => {
