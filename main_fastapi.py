@@ -1,3 +1,4 @@
+import asyncio
 import os
 
 import uvicorn
@@ -18,6 +19,7 @@ from pyngrok import ngrok
 from dotenv import load_dotenv
 
 from jinja_custom_filters.object_type_filter import type_name
+from utils.appointment_reminder import appointment_reminder
 from utils.work_time_generator import generate_time_slots
 
 load_dotenv()
@@ -32,6 +34,7 @@ async def lifespan(app: FastAPI):
     create_db_and_tables()
     ngrok.set_auth_token(os.getenv('NGROK_AUTH_TOKEN'))
     connection = ngrok.connect(addr='8000', domain=os.getenv('NGROK_DOMAIN_NAME'))
+    asyncio.create_task(appointment_reminder())
     logger.info(connection.public_url)
     logger.info('Приложение стартовало ✅')
     yield
@@ -383,4 +386,5 @@ async def get_specialistdayoffs(session: SessionDep) -> Sequence[SpecialistDayOf
     return dayoffs
 
 if __name__ == "__main__":
+
     uvicorn.run(app, host="0.0.0.0", port=8000)

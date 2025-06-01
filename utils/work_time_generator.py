@@ -18,6 +18,7 @@ def generate_time_slots(
     lunch_start_dt = datetime.combine(choose_date, lunch_start)
     lunch_end_dt = datetime.combine(choose_date, lunch_end)
 
+    # Где то хранить slots чтобы нельзя было переиспользовать слоты
     slots = []
     current = start_dt
 

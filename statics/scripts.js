@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
+  
   function showCustomAlert() {
     document.getElementById('customModal').style.display = 'flex';
   }
@@ -62,10 +63,40 @@ flatpickr(input, {
     })
     .catch(error => {
       console.warn("Ошибка:", error.message);
-      // Можно тут показать подсказку, но без alert'а
     });
+  },
+
+  
+  onReady: function () {
+    disableExpiredSlots();
   }
 });
+
+function disableExpiredSlots() {
+  const now = new Date();
+
+  const dateStr = document.querySelector('#datepicker').value; 
+  const [day, month, year] = dateStr.split('/');
+  const selectedDate = new Date(year, month - 1, day);
+
+  const isToday =
+    now.getDate() === selectedDate.getDate() &&
+    now.getMonth() === selectedDate.getMonth() &&
+    now.getFullYear() === selectedDate.getFullYear();
+
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+  const buttons = document.querySelectorAll('.time-slot-btn');
+  buttons.forEach(btn => {
+    const [hh, mm] = btn.dataset.time.split(':').map(Number);
+    const slotMinutes = hh * 60 + mm;
+
+    if (isToday && slotMinutes <= currentMinutes) {
+      btn.disabled = true;
+      btn.classList.add('not-allowed');
+    }
+  });
+}
 
 function disableTimeSlots() {
   const dateTimeTitle = document.getElementById('datetime-title')

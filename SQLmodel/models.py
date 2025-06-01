@@ -42,17 +42,23 @@ class UserCreate(SQLModel):
     id: int = Field(primary_key=True)
     name: str = Field(max_length=64)
     lastname: str = Field(max_length=64)
+    reminder_3h: bool = Field(default=False)
+    reminder_1h: bool = Field(default=False)
 
 
 class UserUpdate(SQLModel):
     name: str | None = Field(default=None, max_length=64)
     lastname: str | None = Field(default=None, max_length=64)
+    reminder_3h: bool | None = Field(default=False)
+    reminder_1h: bool | None = Field(default=False)
 
 
 class UserRead(SQLModel):
     id: int
     name: str
     lastname: str
+    reminder_3h: bool = Field(default=False)
+    reminder_1h: bool = Field(default=False)
     appointment: Optional['AppointmentTimeRead'] = None
 
 
