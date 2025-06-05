@@ -5,11 +5,20 @@ from sqlmodel import Session, select
 from sqlalchemy.orm import selectinload
 from loguru import logger
 
-from SQLmodel.database import engine, create_db_and_tables
+from SQLmodel.database import engine
 from SQLmodel.models import User, AppointmentTime
 
+from bot import bot
 
-async def appointment_reminder(session: Session = Session(engine)):
+
+async def appointment_reminder(session: Session = Session(engine)) -> None:
+    """
+    Эта функция напоминалка, которая срабатывает за 3 и 1 час до записи и шлет напоминание как юзеру
+    так и специалисту.
+
+    :param session:
+    :return:
+    """
     while True:
         with session as ss:
             users = ss.scalars(
@@ -23,11 +32,30 @@ async def appointment_reminder(session: Session = Session(engine)):
                 if user.appointment:
                     if user.appointment.datetime <= datetime_now_3h_plus and user.reminder_3h == False:
                         user.reminder_3h = True
+                        logger.info(user.id)
+                        logger.info(user.appointment.specialist_id)
+                        await bot.send_message(
+                            chat_id=user.id,
+                            text=f'{user.name} у вас запись {user.appointment.datetime}'
+                        )
+                        await bot.send_message(
+                            chat_id=user.appointment.specialist_id,
+                            text=f'У вас сегодня есть запись в {user.appointment.datetime} с юзером {user.name}'
+                        )
                         logger.info(f'{user.name} у вас запись {user.appointment.datetime}')
                     elif user.appointment.datetime <= datetime_now_1h_plus and user.reminder_1h == False:
                         user.reminder_1h = True
+
+                        await bot.send_message(
+                            chat_id=user.id,
+                            text=f'{user.name} у вас запись {user.appointment.datetime}'
+                        )
+                        await bot.send_message(
+                            chat_id=user.appointment.specialist_id,
+                            text=f'У вас сегодня есть запись в {user.appointment.datetime} с юзером {user.name}'
+                        )
                         logger.info(f'{user.name} у вас запись {user.appointment.datetime}')
-                    elif user.appointment.datetime <= datetime_now:
+                    if user.appointment.datetime <= datetime_now:
                         appointment = ss.get(AppointmentTime, user.appointment.id)
                         logger.info(appointment)
                         ss.delete(appointment)

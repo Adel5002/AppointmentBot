@@ -1,3 +1,4 @@
+
 document.addEventListener('DOMContentLoaded', function () {
   
   function showCustomAlert() {
@@ -7,9 +8,9 @@ document.addEventListener('DOMContentLoaded', function () {
   function closeModal() {
     document.getElementById('customModal').style.display = 'none';
   }
-
+  const pathParts = window.location.pathname.split('/');
   const input = document.getElementById('datepicker');
-  const specialist_id = document.getElementById('specialist-id').value
+  const specialist_id = pathParts[2];
 
   function formatDateLocal(date) {
     const year = date.getFullYear();
@@ -55,7 +56,8 @@ flatpickr(input, {
         disableTimeSlots();
         throw new Error(response_text['detail']);
       } else if (!response.ok) {
-        throw new Error(`Ошибка сервера: ${response.status}`);
+        const response_text = await response.json();
+        throw new Error(response_text['detail']);
       }
     })
     .then(() => {
@@ -140,6 +142,17 @@ function disableTimeSlots() {
                 });
 
                 if (deleteResponse.ok) {
+                  await fetch(`/user-update/${user.id}`, {
+                    method: 'PUT',
+                    headers: {
+                      "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                      reminder_3h: false,
+                      reminder_1h: false
+                    })
+                  })
+
                   const response = await fetch(`/get-date/${specialist_id}/?choose_date=${date}`, {
                     method: 'POST',
                     headers: {

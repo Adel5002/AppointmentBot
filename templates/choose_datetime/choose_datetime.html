@@ -12,13 +12,18 @@
         <button id="cancelButton">Отмена</button>
     </div>
     </div>
-    <h2 id="datetime-title" class="datetime-title">Choose time</h2>
+    {% if user_appointment %}
+    <form id="deleteAppointment">
+        <input type="hidden" name="appointment_id" value="{{ user_appointment.id }}">
+        <button type="submit">Отменить запись!</button>
+    </form>
+    {% endif %}
+    <h2 id="datetime-title" class="datetime-title">Выберите время</h2>
     <div id="calendarWrapper" class="flatpickr" data-wrap="true" style="display:inline-block; cursor:pointer; font-family: monospace;">
         <input id="datepicker" type="text" data-input style="border: none; background: transparent; cursor: pointer; font-family: monospace;" />
     </div>
  
     <div class="time-slots-grid">
-        <input type="hidden" id="specialist-id" value="12345678">
         {% for slot in time_slots %}
             {% if slot|type_name == "tuple" %}
                 <button disabled value="{{ slot }}" class="time-slot-btn used">

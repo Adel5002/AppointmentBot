@@ -1,5 +1,7 @@
 import asyncio
+import logging
 import os
+import sys
 
 import uvicorn
 
@@ -27,6 +29,8 @@ load_dotenv()
 from SQLmodel.database import create_db_and_tables, SessionDep
 from SQLmodel.models import Specialist, SpecialistCreate, SpecialistUpdate, SpecialistDayOff, AppointmentTime, User, \
     UserCreate, UserUpdate, UserRead
+
+from bot import bot
 
 
 @asynccontextmanager
@@ -84,12 +88,29 @@ async def set_cookies(request: Request):
     return response
 
 @app.get('/', response_class=HTMLResponse)
-async def main_page(request: Request):
-    logger.info(request.cookies)
-    return templates.TemplateResponse(request=request, name='index.html', context={'today': date.today()})
+async def main_page(request: Request, session: SessionDep):
+    firstname = request.cookies.get("firstname")
+    logger.info(firstname)
+    specialists_ids = session.scalars(select(Specialist.id)).all()
+    return templates.TemplateResponse(
+        request=request,
+        name='index.html',
+        context={
+            'today': date.today(),
+            'specialists_ids': list(map(str, specialists_ids))
+        }
+    )
 
 @app.get('/choose-datetime/{specialist_id}/')
-async def choose_datetime(request: Request, session: SessionDep, specialist_id: int, choose_date: date):
+async def choose_datetime(request: Request, session: SessionDep, specialist_id: int, choose_date: date = date.today()):
+    specialist_exists = session.get(Specialist, specialist_id)
+    logger.info(specialist_exists)
+
+    if not specialist_exists:
+        return RedirectResponse(url='/?error=true', status_code=302)
+
+    user_appointment = session.scalar(select(AppointmentTime).where(AppointmentTime.user_id == request.cookies.get('user_tg_id')))
+    logger.info(user_appointment)
     specialist = session.get(Specialist, specialist_id)
     work_time_start = specialist.work_start
     work_time_end = specialist.work_end
@@ -130,7 +151,8 @@ async def choose_datetime(request: Request, session: SessionDep, specialist_id: 
         name='choose_datetime/choose_datetime.html',
         context={
             'time_slots': time_slots,
-            'current_date': choose_date
+            'current_date': choose_date,
+            'user_appointment': user_appointment
         }
     )
 
@@ -173,10 +195,43 @@ async def get_date(
         status_code=303
     )
 
+@app.get('/specialist-profile/{specialist_id}')
+async def specialist_profile(request: Request, specialist_id: int, session: SessionDep):
+    specialist = session.get(Specialist, specialist_id)
+    logger.info(specialist)
+    return templates.TemplateResponse(
+        request=request,
+        name='specialist_profile/specialist_profile.html',
+        context={'specialist': specialist}
+    )
+
+@app.get('/edit-specialist-page/{specialist_id}')
+async def edit_specialist_page(request: Request, specialist_id: int, session: SessionDep):
+    specialist = session.get(Specialist, specialist_id)
+    return templates.TemplateResponse(
+        request=request,
+        name='specialist_profile/edit_profile.html',
+        context={'specialist': specialist}
+    )
+
+@app.get('/appointment-details/{appointment_id}')
+async def appointment_details(request: Request, appointment_id: int, session: SessionDep):
+    appointment = session.get(AppointmentTime, appointment_id)
+    return templates.TemplateResponse(
+        request=request,
+        name='specialist_profile/appointment_details.html',
+        context={'appointment': appointment}
+    )
+
 # --- Specialist ---
 
 @app.post('/specialist-create/', response_model=Specialist)
 async def specialist_create(specialist_data: SpecialistCreate, session: SessionDep) -> Specialist:
+    specialist_exists = session.get(Specialist, specialist_data.id)
+    logger.info(specialist_data)
+    if specialist_exists:
+        raise HTTPException(status_code=409, detail='Специалист с таким id уже существует!')
+
     specialist = Specialist(**specialist_data.dict())
     session.add(specialist)
     session.commit()
@@ -219,8 +274,6 @@ async def get_specialist(specialist_id: int, session: SessionDep) -> Specialist:
 @app.get('/specialists/', response_model=List[Specialist])
 async def get_specialists(session: SessionDep) -> Sequence[Specialist]:
     specialists = session.scalars(select(Specialist))
-    if not specialists.one_or_none():
-        raise HTTPException(404, 'No specialist registered yet!')
     return specialists
 
 
@@ -314,10 +367,13 @@ async def appointment_update(appointment_id: int, appointment_new_data: Appointm
 @app.delete('/appointment-delete/{appointment_id}')
 async def appointment_delete(appointment_id: int, session: SessionDep):
     appointment = session.get(AppointmentTime, appointment_id)
+    user = session.get(User, appointment.user_id)
     if not appointment:
         raise HTTPException(404, 'Appointment not found')
     session.delete(appointment)
     session.commit()
+    await bot.send_message(chat_id=appointment.specialist_id, text=f'{user.name} отменил запись в {appointment.datetime}')
+    await manager.broadcast("reload")
     return {'success': 'Appointment deleted successfully'}
 
 

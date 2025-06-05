@@ -1,0 +1,22 @@
+{% extends 'index.html' %}
+
+{% block header %}
+<header class="page-header">
+    <h1>Обновить профиль</h1>
+    <a href="{{ url_for('specialist_profile', specialist_id=specialist.id) }}" class="home-button" title="На главную">🏠</a>
+</header>
+{% endblock %}
+
+{% block body %}
+<div>
+    <form id="editSpecialistProfile">
+        <input name="name" type="text" value="{{ specialist.name }}">
+        <input name="lastname" type="text" value="{{ specialist.lastname }}">
+        <input name="work_start" type="text" value="{{ specialist.work_start }}">
+        <input name="work_end" type="text" value="{{ specialist.work_end }}">
+        <input name="lunch_start" type="text" value="{{ specialist.lunch_start }}">
+        <input name="lunch_end" type="text" value="{{ specialist.lunch_end }}">
+        <button type="submit">submit</button>
+    </form>
+</div>
+{% endblock %}

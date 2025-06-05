@@ -13,6 +13,20 @@ def generate_time_slots(
         excluded_slots: list[datetime] | None = None,
 ) -> list[datetime]:
 
+    """
+    Эта функция генерирует временные слоты в которые можно взять запись, также она учитывает
+    время обеда и помечает уже занятые слоты
+
+    :param start:
+    :param end:
+    :param lunch_start:
+    :param lunch_end:
+    :param choose_date:
+    :param slot_minutes:
+    :param excluded_slots:
+    :return:
+    """
+
     start_dt = datetime.combine(choose_date, start)
     end_dt = datetime.combine(choose_date, end)
     lunch_start_dt = datetime.combine(choose_date, lunch_start)

@@ -8,21 +8,21 @@ class SpecialistCreate(SQLModel):
     id: int = Field(primary_key=True)
     name: str = Field(index=True, max_length=64)
     lastname: str = Field(max_length=64)
-    email: str
     work_start: time
     work_end: time
     lunch_start: time
     lunch_end: time
+    appointment_link: str | None = Field(default=None)
 
 
 class SpecialistUpdate(SQLModel):
     name: str | None = Field(default=None, index=True, max_length=64)
     lastname: str | None = Field(default=None, max_length=64)
-    email: str | None = Field(default=None)
     work_start: time | None = Field(default=None)
     work_end: time | None = Field(default=None)
     lunch_start: time | None = Field(default=None)
     lunch_end: time | None = Field(default=None)
+    appointment_link: str | None = Field(default=None)
 
 
 class Specialist(SpecialistCreate, table=True):
@@ -44,6 +44,7 @@ class UserCreate(SQLModel):
     lastname: str = Field(max_length=64)
     reminder_3h: bool = Field(default=False)
     reminder_1h: bool = Field(default=False)
+    tg_username: str
 
 
 class UserUpdate(SQLModel):
@@ -51,6 +52,7 @@ class UserUpdate(SQLModel):
     lastname: str | None = Field(default=None, max_length=64)
     reminder_3h: bool | None = Field(default=False)
     reminder_1h: bool | None = Field(default=False)
+    tg_username: str | None = Field(default=False)
 
 
 class UserRead(SQLModel):

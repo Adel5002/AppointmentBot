@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="{{ url_for('statics', path='/styles.css?=v2') }}" rel="stylesheet">
+    <link href="{{ url_for('statics', path='/styles.css?=v6') }}" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
     <title>{% block title %}Main Page{% endblock %}</title>
 </head>
@@ -11,20 +11,35 @@
     {% block header %}
         <header class="tg-header">
             <h2 class="tg-header-title">
-                👋 Hello, {{ request.cookies.get('firstname') or 'quest' }}!
+                👋 Привет, {{ request.cookies.get('firstname') or 'гость' }}!
             </h2>
             <p class="tg-header-subtitle">
-                Welcome to our Telegram MiniApp
+                Добро пожаловать в наш Telegram MiniApp
+                
             </p>
+
+            {% if request.query_params.get("error") %}
+                <p class="tg-header-subtitle">
+                   Такого специалиста не существует, пожалуйста запросите у своего специалиста новую ссылку!
+                </p>
+            {% elif request.cookies.get('user_tg_id') not in specialists_ids and request.url == request.base_url %}
+                <p class="tg-header-subtitle">
+                    Чтобы записаться на прием к специалисту пожалуйста
+                    запросите у него ссылку!
+                </p>
+            {% endif %}
+
         </header>
     {% endblock %}
         
     {% block body %}
-        <main class="main-section">
-            <button class="consult-button">
-                <a href="{{ url_for('choose_datetime', specialist_id=12345678) }}?choose_date={{ today }}">Получить консультацию</a>
-            </button>
-        </main>
+        {% if request.cookies.get('user_tg_id') in specialists_ids %}
+            <main class="main-section">
+                <button class="consult-button">
+                    <a href="{{ url_for('specialist_profile', specialist_id=request.cookies.get('user_tg_id')) }}">Личный кабинет</a>
+                </button>
+            </main>
+        {% endif %}
     {% endblock %}
     <script src="https://telegram.org/js/telegram-web-app.js?57"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
@@ -37,8 +52,13 @@
             }
         };
     </script>
-    <script src="{{ url_for('statics', path='/scripts.js?=v3') }}"></script>
-    <script src="{{ url_for('statics', path='/user_create.js?=v1') }}"></script>
+    
+    <script src="{{ url_for('statics', path='/scripts.js?=v6') }}"></script>
+    <script src="{{ url_for('statics', path='/user_create.js?=v4') }}"></script>
+    <script src="{{ url_for('statics', path='/specialist_own_link.js?=v2') }}"></script>
+    <script src="{{ url_for('statics', path='/edit_specialist_profile.js?=v1') }}"></script>
+    <script src="{{ url_for('statics', path='/delete_appointment.js?=v1') }}"></script>
+    
     
 </body>
 </html>

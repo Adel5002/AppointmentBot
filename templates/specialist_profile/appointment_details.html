@@ -1,0 +1,30 @@
+{% extends 'index.html' %}
+
+{% block header %}
+<header class="page-header">
+    <h1>📋 Детали записи</h1>
+    <a href="{{ url_for('specialist_profile', specialist_id=appointment.specialist_id) }}" class="home-button" title="На главную">🏠</a>
+</header>
+{% endblock %}
+
+{% block body %}
+<main class="appointment-details">
+
+    <section class="card profile-card">
+        <h2>👤 Пользователь</h2>
+        <p><strong>ФИО:</strong> {{ appointment.user.lastname }} {{ appointment.user.name }}</p>
+        <p><strong>Telegram:</strong>
+            <a href="https://t.me/{{ appointment.user.tg_username }}" target="_blank">
+                @{{ appointment.user.tg_username }}
+            </a>
+        </p>
+    </section>
+
+    <section class="card time-card">
+        <h2>🕒 Время приёма</h2>
+        <p>{{ appointment.datetime.strftime('%A, %d %B %Y') }}</p>
+        <p style="font-size: 24px; font-weight: bold;">{{ appointment.datetime.strftime('%H:%M') }}</p>
+    </section>
+
+</main>
+{% endblock %}

@@ -8,6 +8,17 @@
     --button-text-color: var(--tg-theme-button-text-color, #ffffff);
 }
 
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+
 body.app-body {
     margin: 0;
     font-family: 'Inter', sans-serif;
@@ -228,3 +239,188 @@ body.app-body {
     margin: 10px;
 }
 
+.specialist-page {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 16px;
+    background-color: var(--tg-theme-bg-color, #ffffff);
+    font-family: system-ui, sans-serif;
+    box-sizing: border-box;
+}
+
+.appointments-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+}
+
+.appointment-button {
+    padding: 10px 16px;
+    border-radius: 12px;
+    background-color: var(--tg-theme-button-color, #0088cc);
+    color: var(--tg-theme-button-text-color, #fff);
+    text-decoration: none;
+    font-size: 16px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.edit-profile-wrapper {
+    display: flex;
+    justify-content: center;
+    padding-bottom: 12px;
+    margin-top: 20px;
+}
+
+.edit-profile-button {
+    font-size: 14px;
+    padding: 10px 20px;
+    background-color: var(--tg-theme-button-color, #0088cc);
+    color: var(--tg-theme-button-text-color, #fff);
+    border-radius: 16px;
+    text-decoration: none;
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+    transition: background-color 0.2s ease;
+}
+
+.edit-profile-button:hover {
+    background-color: #0074b0;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 16px 10px;
+    color: var(--tg-theme-text-color);
+    font-family: system-ui, sans-serif;
+    background-color: transparent;
+}
+
+.page-header h1 {
+    font-size: 20px;
+    margin: 0;
+    color: var(--tg-theme-text-color);
+}
+
+.home-button {
+    font-size: 18px;
+    background-color: var(--tg-theme-button-color, #0088cc);
+    color: var(--tg-theme-button-text-color, #fff);
+    padding: 6px 12px;
+    border-radius: 12px;
+    text-decoration: none;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    transition: background-color 0.2s ease;
+}
+
+.home-button:hover {
+    background-color: #0074b0;
+}
+
+.appointment-details {
+    max-width: 600px;
+    width: 90vw;
+    margin: 0 auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.card {
+    background-color: var(--tg-theme-secondary-bg-color, #ffffff);
+    border-radius: 16px;
+    padding: 16px 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    color: var(--tg-theme-text-color);
+}
+
+.card h2 {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: var(--tg-theme-link-color);
+}
+
+.card p {
+    font-size: 16px;
+    margin: 6px 0;
+}
+
+a {
+    color: var(--tg-theme-link-color);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+form#editSpecialistProfile {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    background-color: var(--tg-theme-secondary-bg-color, #f0f0f0);
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    max-width: 500px;
+    margin: 24px auto;
+  }
+
+  
+  form#editSpecialistProfile input[type="text"] {
+    padding: 12px;
+    border: 1px solid var(--tg-theme-hint-color, #ccc);
+    border-radius: 8px;
+    font-size: 16px;
+    background-color: var(--tg-theme-bg-color, #fff);
+    color: var(--tg-theme-text-color, #222);
+    transition: border-color 0.2s ease;
+  }
+
+  form#editSpecialistProfile input[type="text"]:focus {
+    outline: none;
+    border-color: var(--tg-theme-button-color, #0088cc);
+  }
+
+  
+  form#editSpecialistProfile button[type="submit"] {
+    padding: 12px;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    background-color: var(--tg-theme-button-color, #0088cc);
+    color: var(--tg-theme-button-text-color, #fff);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+
+  form#editSpecialistProfile button[type="submit"]:hover {
+    background-color: #007ab8;
+  }
+
+
+  #deleteAppointment button {
+    background-color: #e53935; /* Красный */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+#deleteAppointment button:hover {
+    background-color: #c62828;
+    transform: scale(1.03);
+}
+
+#deleteAppointment {
+    margin-top: 20px;
+}

@@ -1,0 +1,30 @@
+{% extends 'index.html' %}
+
+{% block header %}
+    <header class="tg-header">
+        <h2 class="tg-header-title">
+            👋 Добро пожаловать, {{ request.cookies.get('firstname') }}!
+        </h2>
+
+    </header>
+    {% endblock %}
+
+{% block body %}
+<main class="specialist-page">
+    <div class="appointments-wrapper">
+        {% for app in specialist.appointment %}
+            <a href="{{ url_for('appointment_details', appointment_id=app.id) }}" class="appointment-button">
+                {{ app.datetime.strftime("%H:%M") }}
+            </a>
+        {% endfor %}
+    </div>
+
+    <div class="edit-profile-wrapper">
+        <a href="{{ url_for('edit_specialist_page', specialist_id=specialist.id) }}" class="edit-profile-button">
+            ✏️ Изменить профиль
+        </a>
+    </div>
+</main>
+{% endblock %}
+
+
